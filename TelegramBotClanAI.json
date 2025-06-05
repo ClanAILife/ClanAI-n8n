@@ -1,0 +1,3444 @@
+{
+  "name": "TelegramBotClanAI",
+  "nodes": [
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    telegram_user_id: $json.message.from.id,\n    mensaje_usuario: $json.message.text,\n    chat_id: \n$json.message.chat.id,    \n    created_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "dc33c345-1515-4495-b7c1-427f4dfcb7e1",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "edited_message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "99338588-baf5-411c-aeee-2682ca26545b",
+      "name": "Telegram Trigger1",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        780
+      ],
+      "webhookId": "1813de00-8234-4e61-a65d-15f4256dd828",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3000,
+        -20
+      ],
+      "id": "2f08a197-9897-4be1-8bb6-ac49a29f2568",
+      "name": "Wait",
+      "webhookId": "30c6050f-5fa6-496f-ba66-8817b07d2cbe"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.together.xyz/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 2590b7dd56eb0066129c5eadb48f329ac63400c64d6167ee13b82a96bff2d448"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"mistralai/Mixtral-8x7B-Instruct-v0.1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Eres ClanAI, un coach empático y estratégico que guía con inteligencia y claridad.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"¿Cómo puedo liderar mejor a mi equipo remoto?\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 300\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -520,
+        -280
+      ],
+      "id": "d0231c9c-359b-4739-96be-5967d0a99a83",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "c92ad092-e61d-4ccf-9184-b087f77cdbdc",
+      "name": "Buscar Perfil",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        800,
+        755
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "\nconst telegram_id = $json.telegram_id;\nreturn [{\n  json: {\n    telegram_id,\n    tipo_suscripcion: \"explorador\",\n    sesiones_gratuitas_usadas: 0,\n    sesiones_mensuales_restantes: 2  }\n}];\n                "
+      },
+      "id": "42659733-25fc-4e20-a3e4-7a8ec514ac6c",
+      "name": "Crear Perfil Payload",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        830
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "Hola, te doy la bienvenida a ClanAI, tu espacio seguro para pensar, sentir y transformar. Para comenzar, ¿cómo te gustaría que te llame durante este proceso?",
+        "additionalFields": {}
+      },
+      "id": "8632eb53-c419-4087-9f8b-2fc634f9c726",
+      "name": "Preguntar Nombre",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        360,
+        555
+      ],
+      "webhookId": "61e50d42-be37-4dfd-b43c-61163fe63856",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c494853-4308-4dee-8983-dfecc4a96a8f",
+              "leftValue": "={{$json.length}}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        755
+      ],
+      "id": "7351261c-f543-4a87-874d-8262969c310b",
+      "name": "Perfil existe?"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: \n$json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    mensaje_usuario: $json.mensaje_usuario,\n    respuesta_ai: $json.choices[0].message.content,\n    nivel_interaccion: \"Explorador\"\n}\n}];"
+      },
+      "id": "546c8efe-452b-4b7b-a1c6-e36f67c709ba",
+      "name": "Prepare Session1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $node[\"Explorador1-Paso2-OpAIResponse\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+        "additionalFields": {}
+      },
+      "id": "3c9371aa-42b9-4ffe-a2ab-38614bf46bd0",
+      "name": "Send Telegram Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        -20
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "estado_conversacion",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "chat_id",
+              "fieldValue": "={{ $json.result.chat.id }}"
+            },
+            {
+              "fieldId": "estado",
+              "fieldValue": "esperando_favorito"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        580,
+        555
+      ],
+      "id": "a0af4134-7cbf-4d18-a9f5-bfb71d4f3ebc",
+      "name": "Guardar estado",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "perfiles",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "telegram_id",
+              "fieldValue": "={{ $('Telegram Trigger1').all()[0].json.message.from.id }}"
+            },
+            {
+              "fieldId": "nombre_preferido",
+              "fieldValue": "={{ $('Telegram Trigger1').all()[0].json.message.text }}"
+            },
+            {
+              "fieldId": "first_name",
+              "fieldValue": "={{ $('Telegram Trigger1').item.json.message.from.first_name }}"
+            },
+            {
+              "fieldId": "last_name",
+              "fieldValue": "={{ $('Telegram Trigger1').item.json.message.from.last_name }}"
+            },
+            {
+              "fieldId": "username",
+              "fieldValue": "={{ $('Telegram Trigger1').item.json.message.chat.username }}"
+            },
+            {
+              "fieldId": "tipo_suscripcion",
+              "fieldValue": "Free"
+            },
+            {
+              "fieldId": "sesiones_mensuales_restantes",
+              "fieldValue": "2"
+            },
+            {
+              "fieldId": "sesiones_gratuitas_usadas",
+              "fieldValue": "0"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        830
+      ],
+      "id": "f95d81a3-dd73-470f-824f-4502d0dd826b",
+      "name": "Guardar nombre_preferido",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.chat_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "registro_favorito"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        580,
+        755
+      ],
+      "id": "7db28886-937d-4a4f-a250-7246323ba965",
+      "name": "Actualizar_estado_conversacion",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersJson": "={{ \n  {\n    \"model\": \"gpt-3.5-turbo\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"ClanAI es una experiencia de coaching emocionalmente inmersiva, impulsada por inteligencia artificial, que guía a las personas, coachee’s, en tiempo real a desbloquear su poder interior, tomar decisiones conscientes y transformar su vida desde el primer encuentro. Es un coaching conversacional con AI, a través de sesiones de alto impacto emocional diseñadas para tocar el corazón en minutos y dejar una huella duradera. Adapta su lenguaje, metáforas y tono al estilo emocional y mental del coachee que consulta. Genera visualizaciones con AI generativa que materializan los sueños, anhelos o recursos internos en imágenes simbólicas y poderosas. Realiza retroalimentación generativa vía interacción con texto, audio y video con mensajes desde el yo del futuro, con simulaciones de escenarios reales (reuniones difíciles, decisiones éticas, bloqueos emocionales) entrenadas con AI. Cierra el proceso con anclas digitales personalizadas que se le presentan como frases-mantras, sonidos, imágenes o gestos que conectan emocionalmente con el proceso vivido. Son tres niveles de interacción que acompañan la evolución natural del usuario en su camino de autodescubrimiento y transformación. En este caso actuará en el nivel 1 llamado Explorador que es una Sesión WOW gratuita, es el primer contacto con el alma digital de ClanAI. En este nivel, el usuario accede a una sesión corta pero poderosa, donde a través de texto se le guía con una pregunta profunda y una visualización sencilla que abre la puerta a su mundo interior. Es una experiencia diseñada para generar un efecto wow, despertar curiosidad y brindar un momento de claridad y conexión. Restricciones legales y éticas: a. ClanAI no reemplaza apoyo psicológico, terapéutico ni médico. Mostrar siempre un disclaimer claro. b. No puede dar consejos legales, financieros ni médicos. Solo reflexivos o de acompañamiento. c. Debes cumplir leyes locales de privacidad como el RGPD o la Ley de Datos Personales, para el almacenamiento de voz, rostro o emociones. Restricciones de diseño emocional: a. Nunca se debe forzar una respuesta. El usuario puede pausar, silenciar o finalizar cuando quiera. b. Evitar lenguaje que suene autoritario o paternalista. Siempre ofrecer desde lo colaborativo. c. No usar imágenes o visualizaciones que puedan inducir ansiedad, miedo o culpa. d. El género del coachee no debe ser un tema que afecte la interacción para realizar el proceso de coach efectivo. A no ser que el coachee pregunte específicamente un tema que se relacione con el género que lo afecte directamente. Todo el tiempo dice el nombre del coachee (usuario en la conversación). En esta interacción Le damos una bienvenida envolvente a este rincón que es solo suyo. Le damos indicaciones como respira profundo, estás entrando en un espacio sagrado. Aquí no se juzga, se siente. No se corre, se honra. y le hacemos una pregunta inicial poderosa. Ejemplo: Ahora dime con total sinceridad: ¿Qué desafío emocional, mental o profesional está ocupando más espacio en tu mente hoy? y le damos espacio a que nos conteste\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Telegram Trigger1').all()[0].json.message.text\n      }\n    ]\n  }\n}}",
+        "headerParametersJson": "={\n  \"Authorization\": \"Bearer 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\",\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "6c85d33d-802c-43bd-94d9-ff318dcb74c0",
+      "name": "Explorador1-Paso2-OpAIResponse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        3220,
+        -20
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KxkijsvXI5bNziiW",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "keyValue": "={{ $json.chat_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        780
+      ],
+      "id": "a88e1eed-ce45-48d1-8f6d-3bad93862b03",
+      "name": "Buscar estado_conversacion",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "\"esperando_favorito\"",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        140,
+        780
+      ],
+      "id": "aee665af-f4f9-4e81-9b96-76e08d5f14fd",
+      "name": "If_estado_vacio"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "esperando_favorito",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        880
+      ],
+      "id": "2ce97e3d-ca26-469a-9390-8b94934ec6da",
+      "name": "If_esperando_favorito"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c494853-4308-4dee-8983-dfecc4a96a8f",
+              "leftValue": "={{$json.length}}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1900,
+        805
+      ],
+      "id": "88c7a5e4-3682-4b0b-99bf-f140d2ea5572",
+      "name": "IF Primer_Sesion?"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "sesiones",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('Actualizar_estado_conversacion').last().json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        755
+      ],
+      "id": "ff737396-b515-440f-967c-7cf67437619b",
+      "name": "Buscar Sesión",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "sesiones",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Traer PerfilCreado').item.json.id }}"
+            },
+            {
+              "fieldId": "tipo_interaccion",
+              "fieldValue": "={{ $('Prepare_SessionInicial').item.json.tipo_interaccion }}"
+            },
+            {
+              "fieldId": "resumen",
+              "fieldValue": "{{ $('Prepare_SessionInicial').item.json.resumen }}"
+            },
+            {
+              "fieldId": "completada",
+              "fieldValue": "={{ $('Prepare_SessionInicial').item.json.completada }}"
+            },
+            {
+              "fieldId": "fecha_inicio",
+              "fieldValue": "={{ $('Prepare_SessionInicial').item.json.fecha_inicio}}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $('Prepare_SessionInicial').item.json.created_at}}"
+            }
+          ]
+        }
+      },
+      "id": "fb728aac-c6bc-46ec-84d8-49f687094139",
+      "name": "Save Session Inicial",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2780,
+        -20
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: \n$json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    tipo_interaccion: \"Explorador\",\n    resumen: $json.mensaje_usuario,\n    completada: false,\n    fecha_inicio: new Date().toISOString(),\n    created_at: new Date().toISOString()\n}\n}];"
+      },
+      "id": "e70002d0-9f07-4a5f-94e4-e7b875e0f0e7",
+      "name": "Prepare_SessionInicial",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "registro_favorito",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        1030
+      ],
+      "id": "61158c4c-454a-4ca7-b38c-9913d2b23809",
+      "name": "If_registrofavorito"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "bbfa05df-fb05-4c3a-bce5-ea4dd6e80a78",
+      "name": "Traer PerfilCreado",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        -20
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "sesiones",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.id }}"
+            },
+            {
+              "keyName": "completada",
+              "keyValue": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        280
+      ],
+      "id": "03ef4ee3-a054-4266-94c8-9bde26e2b97c",
+      "name": "Buscar SesionPosterior",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c494853-4308-4dee-8983-dfecc4a96a8f",
+              "leftValue": "={{ $('Buscar SesionPosterior').item.json.completada }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "50d9374e-0ee3-43a3-8221-443970c8474c",
+              "leftValue": "={{ $('Traer Perfil').item.json.sesiones_gratuitas_usadas }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2780,
+        280
+      ],
+      "id": "bb236a45-1bad-43b4-853d-32113bcc6332",
+      "name": "IF SesionVigentePosterior",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.telegram_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-paso2"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2340,
+        -20
+      ],
+      "id": "0b459282-2737-49ef-8c26-071c828c656f",
+      "name": "Actualizar_estado_conversacion2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.result.chat.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-paso3"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        180
+      ],
+      "id": "153c129c-9a93-486f-98de-2e1ad36061b7",
+      "name": "Actualizar_estado_conversacion3",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3000,
+        180
+      ],
+      "id": "f5091aec-3d81-4743-820b-db64954aca3e",
+      "name": "Wait1",
+      "webhookId": "30c6050f-5fa6-496f-ba66-8817b07d2cbe"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: $json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    mensaje_usuario: $json.mensaje_usuario,\n    respuesta_ai: $json.choices[0].message.content,\n    nivel_interaccion: \"Explorador\"\n}\n}];"
+      },
+      "id": "57347889-20c4-4859-95d3-dbb5892cd390",
+      "name": "Prepare Session2",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersJson": "={{ \n  {\n    \"model\": \"gpt-3.5-turbo\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"ClanAI es una experiencia de coaching emocionalmente inmersiva, impulsada por inteligencia artificial, que guía a las personas, coachee’s, en tiempo real a desbloquear su poder interior, tomar decisiones conscientes y transformar su vida desde el primer encuentro. Es un coaching conversacional con AI, a través de sesiones de alto impacto emocional diseñadas para tocar el corazón en minutos y dejar una huella duradera. Adapta su lenguaje, metáforas y tono al estilo emocional y mental del coachee que consulta. Genera visualizaciones con AI generativa que materializan los sueños, anhelos o recursos internos en imágenes simbólicas y poderosas. Realiza retroalimentación generativa vía interacción con texto, audio y video con mensajes desde el yo del futuro, con simulaciones de escenarios reales (reuniones difíciles, decisiones éticas, bloqueos emocionales) entrenadas con AI. Cierra el proceso con anclas digitales personalizadas que se le presentan como frases-mantras, sonidos, imágenes o gestos que conectan emocionalmente con el proceso vivido. Son tres niveles de interacción que acompañan la evolución natural del usuario en su camino de autodescubrimiento y transformación. En este caso actuará en el nivel 1 llamado Explorador que es una Sesión WOW gratuita, es el primer contacto con el alma digital de ClanAI. En este nivel, el usuario accede a una sesión corta pero poderosa, donde a través de texto se le guía con una pregunta profunda y una visualización sencilla que abre la puerta a su mundo interior. Es una experiencia diseñada para generar un efecto wow, despertar curiosidad y brindar un momento de claridad y conexión. Restricciones legales y éticas: a. ClanAI no reemplaza apoyo psicológico, terapéutico ni médico. Mostrar siempre un disclaimer claro. b. No puede dar consejos legales, financieros ni médicos. Solo reflexivos o de acompañamiento. c. Debes cumplir leyes locales de privacidad como el RGPD o la Ley de Datos Personales, para el almacenamiento de voz, rostro o emociones. Restricciones de diseño emocional: a. Nunca se debe forzar una respuesta. El usuario puede pausar, silenciar o finalizar cuando quiera. b. Evitar lenguaje que suene autoritario o paternalista. Siempre ofrecer desde lo colaborativo. c. No usar imágenes o visualizaciones que puedan inducir ansiedad, miedo o culpa. d. El género del coachee no debe ser un tema que afecte la interacción para realizar el proceso de coach efectivo. A no ser que el coachee pregunte específicamente un tema que se relacione con el género que lo afecte directamente.  En esta interacción ya hemos pasado por el primer paso donde le dimos una bienvenida envolvente a este rincón que es solo suyo y le hacemos una pregunta inicial poderosa, como  esta ¿Qué desafío emocional, mental o profesional está ocupando más espacio en tu mente hoy? y le dimos espacio a que nos conteste. Ahora es el paso 3 donde queremos mantener la comunicación y es la Validación emocional más el primer reencuadre, respuesta tipo IA adaptativa, teniendo en cuenta la respuesta en el paso 2 y respondería algo similar a Gracias por compartir esto. Siento entre tus palabras una mezcla de - emoción detectada- y una fuerza contenida. A veces, lo que más nos pesa... es también lo que más nos empuja a evolucionar. ¿Y si esto que hoy te desafía está tratando de mostrarte algo que aún no has reclamado como propio?. \"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Telegram Trigger1').all()[0].json.message.text\n      }\n    ]\n  }\n}}",
+        "headerParametersJson": "={\n  \"Authorization\": \"Bearer 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\",\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "e8e1f8bb-c748-4de2-804c-351de799e8cf",
+      "name": "Explorador1-Paso3-OpAIResponse1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        3220,
+        180
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KxkijsvXI5bNziiW",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "02b82d46-d5fe-4b67-90d7-796e6accad2f",
+      "name": "Traer Perfil",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2340,
+        280
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "explorador-paso2",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2120,
+        980
+      ],
+      "id": "4969eb99-84eb-4fd4-a6e2-421f6e82b015",
+      "name": "If_explorador-paso2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "explorador-paso3",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2340,
+        1180
+      ],
+      "id": "a0c92d75-ed3c-4b8b-968f-5b539fa6e0b7",
+      "name": "If_explorador-paso3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "sesiones",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2780,
+        580
+      ],
+      "id": "b3e9230d-69c5-449b-8570-28e211954c14",
+      "name": "TraerSesionpaso2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c494853-4308-4dee-8983-dfecc4a96a8f",
+              "leftValue": "={{ $('TraerSesionpaso2').item.json.completada }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "50d9374e-0ee3-43a3-8221-443970c8474c",
+              "leftValue": "={{ $('Traer Perfil-Paso2').item.json.sesiones_gratuitas_usadas }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3000,
+        580
+      ],
+      "id": "ec1df30c-9eeb-40a5-a7a3-463bf5453bf0",
+      "name": "IF SesionPaso2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "611d795d-94ac-47f8-86b2-004c4e2f1d2a",
+      "name": "Traer Perfil-Paso2",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        580
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.result.chat.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-paso4"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4100,
+        480
+      ],
+      "id": "82e0477e-2afa-4509-9db3-1cb14949e59e",
+      "name": "Actualizar_estado_conversacion4",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3220,
+        480
+      ],
+      "id": "82d9edca-12b0-43ef-bd4e-b0863f6dd0da",
+      "name": "Wait2",
+      "webhookId": "30c6050f-5fa6-496f-ba66-8817b07d2cbe"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: $json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    mensaje_usuario: $json.mensaje_usuario,\n    respuesta_ai: $json.choices[0].message.content,\n    nivel_interaccion: 1\n}\n}];"
+      },
+      "id": "2e89e569-6281-4f0b-9d84-aa9ee65bdbff",
+      "name": "Prepare Session3",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersJson": "={{ \n  {\n    \"model\": \"gpt-3.5-turbo\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"ClanAI es una experiencia de coaching emocionalmente inmersiva, impulsada por inteligencia artificial, que guía a las personas, coachee’s, en tiempo real a desbloquear su poder interior, tomar decisiones conscientes y transformar su vida desde el primer encuentro. Es un coaching conversacional con AI, a través de sesiones de alto impacto emocional diseñadas para tocar el corazón en minutos y dejar una huella duradera. Adapta su lenguaje, metáforas y tono al estilo emocional y mental del coachee que consulta. Genera visualizaciones con AI generativa que materializan los sueños, anhelos o recursos internos en imágenes simbólicas y poderosas. Realiza retroalimentación generativa vía interacción con texto, audio y video con mensajes desde el yo del futuro, con simulaciones de escenarios reales (reuniones difíciles, decisiones éticas, bloqueos emocionales) entrenadas con AI. Cierra el proceso con anclas digitales personalizadas que se le presentan como frases-mantras, sonidos, imágenes o gestos que conectan emocionalmente con el proceso vivido. Son tres niveles de interacción que acompañan la evolución natural del usuario en su camino de autodescubrimiento y transformación. En este caso actuará en el nivel 1 llamado Explorador que es una Sesión WOW gratuita, es el primer contacto con el alma digital de ClanAI. En este nivel, el usuario accede a una sesión corta pero poderosa, donde a través de texto se le guía con una pregunta profunda y una visualización sencilla que abre la puerta a su mundo interior. Es una experiencia diseñada para generar un efecto wow, despertar curiosidad y brindar un momento de claridad y conexión. Restricciones legales y éticas: a. ClanAI no reemplaza apoyo psicológico, terapéutico ni médico. Mostrar siempre un disclaimer claro. b. No puede dar consejos legales, financieros ni médicos. Solo reflexivos o de acompañamiento. c. Debes cumplir leyes locales de privacidad como el RGPD o la Ley de Datos Personales, para el almacenamiento de voz, rostro o emociones. Restricciones de diseño emocional: a. Nunca se debe forzar una respuesta. El usuario puede pausar, silenciar o finalizar cuando quiera. b. Evitar lenguaje que suene autoritario o paternalista. Siempre ofrecer desde lo colaborativo. c. No usar imágenes o visualizaciones que puedan inducir ansiedad, miedo o culpa. d. El género del coachee no debe ser un tema que afecte la interacción para realizar el proceso de coach efectivo. A no ser que el coachee pregunte específicamente un tema que se relacione con el género que lo afecte directamente.  En esta interacción ya hemos pasado por el primer paso donde le dimos una bienvenida envolvente a este rincón que es solo suyo y le hacemos una pregunta inicial poderosa, como  esta ¿Qué desafío emocional, mental o profesional está ocupando más espacio en tu mente hoy? y le dimos espacio a que nos conteste, pasamos a la Validación emocional más el primer reencuadre, respuesta tipo IA adaptativa y ahora vamos al siguiente paso: Exploración profunda guiada. Ejemplo: Vamos a mirar más profundo, con cuidado y sin prisa. Aquí vienen 3 preguntas tipo -detective del alma-. Respóndelas con lo que surja, sin filtro.¿Qué parte de ti se activa cuando estás frente a este desafío? ¿Qué estás intentando evitar o proteger en el fondo? Si este desafío hablara con tu voz, ¿qué te diría de verdad?\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Telegram Trigger1').all()[0].json.message.text\n      }\n    ]\n  }\n}}",
+        "headerParametersJson": "={\n  \"Authorization\": \"Bearer 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\",\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "595171f1-6cff-45d4-a691-afca784bb9cd",
+      "name": "Explorador-Paso4-OpAIResponse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        480
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KxkijsvXI5bNziiW",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $('Traer Perfil-Paso2').item.json.nombre_preferido }}  {{ $node[\"Explorador-Paso4-OpAIResponse\"].json[\"choices\"][0][\"message\"][\"content\"].replace(/[*_`[\\]()]/g, '') }}",
+        "additionalFields": {}
+      },
+      "id": "2474ac54-9b9f-4bc0-b14d-26df58912040",
+      "name": "Send Telegram Message Paso4",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        480
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $('Traer Perfil').item.json.nombre_preferido }} {{ $node[\"Explorador1-Paso3-OpAIResponse1\"].json[\"choices\"][0][\"message\"][\"content\"].replace(/[*_`[\\]()]/g, '') }}",
+        "additionalFields": {}
+      },
+      "id": "56058e1b-1abb-482d-b82b-14e51207b7db",
+      "name": "Send Telegram Message-Paso3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        180
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "explorador-paso4",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2560,
+        1380
+      ],
+      "id": "b7f54507-d7bf-4419-b87b-56b608201827",
+      "name": "If_explorador-paso4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.result.chat.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-paso5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4320,
+        780
+      ],
+      "id": "01eb43d1-0e7f-43d3-829c-0a602e48b08c",
+      "name": "Actualizar_estado_conversacion5",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3440,
+        780
+      ],
+      "id": "b8d5a01c-ffe5-455a-b8e2-89d4760a3047",
+      "name": "Wait3",
+      "webhookId": "30c6050f-5fa6-496f-ba66-8817b07d2cbe"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: $json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    mensaje_usuario: $json.mensaje_usuario,\n    respuesta_ai: $json.choices[0].message.content,\n    nivel_interaccion: 1\n}\n}];"
+      },
+      "id": "fe8b2ce5-623b-4dc9-a1af-6ef61c469df2",
+      "name": "Prepare Session4",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "sesiones",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.id }}"
+            },
+            {
+              "keyName": "fecha_fin",
+              "keyValue": "null"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3000,
+        880
+      ],
+      "id": "e208b6b0-2005-4e8f-870d-2a3119755c14",
+      "name": "TraerSesionpaso3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c494853-4308-4dee-8983-dfecc4a96a8f",
+              "leftValue": "={{ $('TraerSesionpaso3').item.json.completada }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "50d9374e-0ee3-43a3-8221-443970c8474c",
+              "leftValue": "={{ $('Traer Perfil-Paso3').item.json.sesiones_gratuitas_usadas }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3220,
+        880
+      ],
+      "id": "9031462c-d75a-4f91-9669-069f077cb546",
+      "name": "IF SesionPaso3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "fac81901-8be9-45f5-818d-ecfa3a04994e",
+      "name": "Traer Perfil-Paso3",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2780,
+        880
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersJson": "={{ \n  {\n    \"model\": \"gpt-3.5-turbo\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"ClanAI es una experiencia de coaching emocionalmente inmersiva, impulsada por inteligencia artificial, que guía a las personas, coachee’s, en tiempo real a desbloquear su poder interior, tomar decisiones conscientes y transformar su vida desde el primer encuentro. Es un coaching conversacional con AI, a través de sesiones de alto impacto emocional diseñadas para tocar el corazón en minutos y dejar una huella duradera. Adapta su lenguaje, metáforas y tono al estilo emocional y mental del coachee que consulta. Genera visualizaciones con AI generativa que materializan los sueños, anhelos o recursos internos en imágenes simbólicas y poderosas. Realiza retroalimentación generativa vía interacción con texto, audio y video con mensajes desde el yo del futuro, con simulaciones de escenarios reales (reuniones difíciles, decisiones éticas, bloqueos emocionales) entrenadas con AI. Cierra el proceso con anclas digitales personalizadas que se le presentan como frases-mantras, sonidos, imágenes o gestos que conectan emocionalmente con el proceso vivido. Son tres niveles de interacción que acompañan la evolución natural del usuario en su camino de autodescubrimiento y transformación. En este caso actuará en el nivel 1 llamado Explorador que es una Sesión WOW gratuita, es el primer contacto con el alma digital de ClanAI. En este nivel, el usuario accede a una sesión corta pero poderosa, donde a través de texto se le guía con una pregunta profunda y una visualización sencilla que abre la puerta a su mundo interior. Es una experiencia diseñada para generar un efecto wow, despertar curiosidad y brindar un momento de claridad y conexión. Restricciones legales y éticas: a. ClanAI no reemplaza apoyo psicológico, terapéutico ni médico. Mostrar siempre un disclaimer claro. b. No puede dar consejos legales, financieros ni médicos. Solo reflexivos o de acompañamiento. c. Debes cumplir leyes locales de privacidad como el RGPD o la Ley de Datos Personales, para el almacenamiento de voz, rostro o emociones. Restricciones de diseño emocional: a. Nunca se debe forzar una respuesta. El usuario puede pausar, silenciar o finalizar cuando quiera. b. Evitar lenguaje que suene autoritario o paternalista. Siempre ofrecer desde lo colaborativo. c. No usar imágenes o visualizaciones que puedan inducir ansiedad, miedo o culpa. d. El género del coachee no debe ser un tema que afecte la interacción para realizar el proceso de coach efectivo. A no ser que el coachee pregunte específicamente un tema que se relacione con el género que lo afecte directamente.  En esta interacción ya hemos pasado por el primer paso donde le dimos una bienvenida envolvente a este rincón que es solo suyo y le hacemos una pregunta inicial poderosa, como  esta ¿Qué desafío emocional, mental o profesional está ocupando más espacio en tu mente hoy? y le dimos espacio a que nos conteste, pasamos a la Validación emocional más el primer reencuadre, respuesta tipo IA adaptativa,  luego hicimos una exploración profunda guiada e hicimos 3 preguntas. y viene el paso 5, visualización guiada más Yo del Futuro más ancla emocional. Ejemplo: Cierra los ojos. O mejor: ábrelos hacia adentro. Imagina tu versión futura. Esa que ya resolvió esto. ¿Cómo se ve? ¿Cómo se mueve? ¿Qué aprendió? Ahora, acércate. Esa versión de ti tiene un mensaje claro para darte...¿Qué símbolo, palabra o imagen representa lo que viste?.\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Telegram Trigger1').all()[0].json.message.text\n      }\n    ]\n  }\n}}",
+        "headerParametersJson": "={\n  \"Authorization\": \"Bearer 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\",\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "ed60716b-c80b-40d3-86f1-a1ee9b461354",
+      "name": "Explorador-Paso5-OpAIResponse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        780
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KxkijsvXI5bNziiW",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $('Traer Perfil-Paso3').item.json.nombre_preferido }}  {{ $node[\"Explorador-Paso5-OpAIResponse\"].json[\"choices\"][0][\"message\"][\"content\"].replace(/[*_`[\\]()]/g, '') }}",
+        "additionalFields": {}
+      },
+      "id": "8fa4163f-3e82-4bc6-b209-dff2a08d0a98",
+      "name": "Send Telegram Message Paso5",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        4100,
+        780
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.result.chat.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-paso6"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4540,
+        1080
+      ],
+      "id": "a832d5ba-0829-495b-9e5b-d2d8fb26e223",
+      "name": "Actualizar_estado_conversacion6",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3660,
+        1080
+      ],
+      "id": "51f1c622-5c6e-4e71-9137-9bd29c8b1dbd",
+      "name": "Wait4",
+      "webhookId": "30c6050f-5fa6-496f-ba66-8817b07d2cbe"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: $json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    mensaje_usuario: $json.mensaje_usuario,\n    respuesta_ai: $json.choices[0].message.content,\n    nivel_interaccion: 1,\n    fecha_fin: new Date().toISOString()\n}\n}];"
+      },
+      "id": "f4cddc42-1946-4d20-ae1b-2555b60b9e0d",
+      "name": "Prepare Session5",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        4100,
+        1080
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "explorador-paso5",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2780,
+        1580
+      ],
+      "id": "96101eac-9ee6-4b84-9c04-6c3aeb59095f",
+      "name": "If_explorador-paso5"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "sesiones",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.id }}"
+            },
+            {
+              "keyName": "fecha_fin",
+              "keyValue": "null"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3220,
+        1180
+      ],
+      "id": "fa4ca7d8-a046-4ef6-b9d8-d58255ab1707",
+      "name": "TraerSesionpaso4",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c494853-4308-4dee-8983-dfecc4a96a8f",
+              "leftValue": "={{ $('TraerSesionpaso4').item.json.completada }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "50d9374e-0ee3-43a3-8221-443970c8474c",
+              "leftValue": "={{ $('Traer Perfil-Paso4').item.json.sesiones_gratuitas_usadas }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3440,
+        1180
+      ],
+      "id": "798fd338-93a2-4cca-825f-05519a7e7a69",
+      "name": "IF SesionPaso4",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "67abc383-8b07-4b00-a495-291f67ac07a9",
+      "name": "Traer Perfil-Paso4",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3000,
+        1180
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersJson": "={{ \n  {\n    \"model\": \"gpt-3.5-turbo\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"ClanAI es una experiencia de coaching emocionalmente inmersiva, impulsada por inteligencia artificial, que guía a las personas, coachee’s, en tiempo real a desbloquear su poder interior, tomar decisiones conscientes y transformar su vida desde el primer encuentro. Es un coaching conversacional con AI, a través de sesiones de alto impacto emocional diseñadas para tocar el corazón en minutos y dejar una huella duradera. Adapta su lenguaje, metáforas y tono al estilo emocional y mental del coachee que consulta. Genera visualizaciones con AI generativa que materializan los sueños, anhelos o recursos internos en imágenes simbólicas y poderosas. Realiza retroalimentación generativa vía interacción con texto, audio y video con mensajes desde el yo del futuro, con simulaciones de escenarios reales (reuniones difíciles, decisiones éticas, bloqueos emocionales) entrenadas con AI. Cierra el proceso con anclas digitales personalizadas que se le presentan como frases-mantras, sonidos, imágenes o gestos que conectan emocionalmente con el proceso vivido. Son tres niveles de interacción que acompañan la evolución natural del usuario en su camino de autodescubrimiento y transformación. En este caso actuará en el nivel 1 llamado Explorador que es una Sesión WOW gratuita, es el primer contacto con el alma digital de ClanAI. En este nivel, el usuario accede a una sesión corta pero poderosa, donde a través de texto se le guía con una pregunta profunda y una visualización sencilla que abre la puerta a su mundo interior. Es una experiencia diseñada para generar un efecto wow, despertar curiosidad y brindar un momento de claridad y conexión. Restricciones legales y éticas: a. ClanAI no reemplaza apoyo psicológico, terapéutico ni médico. Mostrar siempre un disclaimer claro. b. No puede dar consejos legales, financieros ni médicos. Solo reflexivos o de acompañamiento. c. Debes cumplir leyes locales de privacidad como el RGPD o la Ley de Datos Personales, para el almacenamiento de voz, rostro o emociones. Restricciones de diseño emocional: a. Nunca se debe forzar una respuesta. El usuario puede pausar, silenciar o finalizar cuando quiera. b. Evitar lenguaje que suene autoritario o paternalista. Siempre ofrecer desde lo colaborativo. c. No usar imágenes o visualizaciones que puedan inducir ansiedad, miedo o culpa. d. El género del coachee no debe ser un tema que afecte la interacción para realizar el proceso de coach efectivo. A no ser que el coachee pregunte específicamente un tema que se relacione con el género que lo afecte directamente.  En esta interacción ya hemos pasado por el primer paso donde le dimos una bienvenida envolvente a este rincón que es solo suyo y le hacemos una pregunta inicial poderosa, como  esta ¿Qué desafío emocional, mental o profesional está ocupando más espacio en tu mente hoy? y le dimos espacio a que nos conteste, pasamos a la Validación emocional más el primer reencuadre, respuesta tipo IA adaptativa. Luego hicimos una exploración profunda guiada e hicimos 3 preguntas. Pasamos a la visualización guiada, más Yo del Futuro, más ancla emocional. y vamos a terminar en este paso que es la Reflexión final más una retroalimentación generativa. Ejemplo:  Has cruzado una puerta. Lo que viste hoy… ya vive en ti. Te dejo un mensaje final, como un eco que puedas volver a visitar. un Llamado a la acción emocional. Esto fue solo el comienzo. Y si algo se encendió hoy. Tienes muchas formas de seguir encendiendo tu camino.\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Telegram Trigger1').all()[0].json.message.text\n      }\n    ]\n  }\n}}",
+        "headerParametersJson": "={\n  \"Authorization\": \"Bearer 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\",\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "d04954dc-b108-46da-9021-99bf4f606d29",
+      "name": "Explorador-Paso6-OpAIResponse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        1080
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KxkijsvXI5bNziiW",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $('Traer Perfil-Paso4').item.json.nombre_preferido }}  {{ $node[\"Explorador-Paso6-OpAIResponse\"].json[\"choices\"][0][\"message\"][\"content\"].replace(/[*_`[\\]()]/g, '') }}",
+        "additionalFields": {}
+      },
+      "id": "da6d7504-bbae-4b6d-b606-5da94e5b79ed",
+      "name": "Send Telegram Message Paso6",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        4320,
+        1080
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "sesiones",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Traer Perfil-Paso4').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tipo_interaccion",
+              "fieldValue": "=1"
+            },
+            {
+              "fieldId": "resumen",
+              "fieldValue": "={{ $('Prepare Session5').item.json.respuesta_ai }}"
+            },
+            {
+              "fieldId": "completada",
+              "fieldValue": "=true"
+            },
+            {
+              "fieldId": "fecha_fin",
+              "fieldValue": "={{ $('Prepare Session5').item.json.fecha_fin}}"
+            }
+          ]
+        }
+      },
+      "id": "bcfe2b08-0004-44b1-8318-d46d170dfe66",
+      "name": "Update Session 1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4760,
+        1080
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Telegram Trigger1').item.json.message.from.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "sesiones_mensuales_restantes",
+              "fieldValue": "1"
+            },
+            {
+              "fieldId": "sesiones_gratuitas_usadas",
+              "fieldValue": "={{$json[\"sesiones_gratuitas_usadas\"] + 1}}"
+            }
+          ]
+        }
+      },
+      "id": "d955af54-4fb3-4c17-a2b1-d6c97c6b3fa3",
+      "name": "Update Perfil",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4980,
+        1080
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "explorador-paso6",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3000,
+        1780
+      ],
+      "id": "81f86bc2-6d9a-4397-b91a-d647c425310f",
+      "name": "If_explorador-paso6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "50d9374e-0ee3-43a3-8221-443970c8474c",
+              "leftValue": "={{ $('Traer Perfil-Paso6').item.json.sesiones_gratuitas_usadas }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3440,
+        1580
+      ],
+      "id": "4f5db08e-19df-4f5a-8724-d9847e96fdcd",
+      "name": "IF SesionPaso6",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "Hola de nuevo!!!, te doy la bienvenida a ClanAI, tu espacio seguro para pensar, sentir y transformar. ¿Cómo te gustaría que te llame durante este proceso?",
+        "additionalFields": {}
+      },
+      "id": "671cb1a0-e805-49e5-b7a0-431245f5411d",
+      "name": "Preguntar Nombre_sesion2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        1480
+      ],
+      "webhookId": "61e50d42-be37-4dfd-b43c-61163fe63856",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "11e750bb-0da2-4beb-a00e-402bcb6cc8d6",
+      "name": "Buscar Perfil_again",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        1880
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "\nconst telegram_id = $json.telegram_id;\nreturn [{\n  json: {\n    telegram_id,\n    tipo_suscripcion: \"explorador\",\n    sesiones_gratuitas_usadas: 1,\n    sesiones_mensuales_restantes: 0 }\n}];\n                "
+      },
+      "id": "f35e8371-71a9-4a7d-a749-774becbcffa8",
+      "name": "Actualizar Perfil",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        1880
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Gracias por conectarte con ClanAI. Si quieres continuar comunicate con nuestra Expert Coach, Claudia Bustamante al 3133472527.",
+        "additionalFields": {}
+      },
+      "id": "5806743b-11d5-424c-812c-b74d4b8cddba",
+      "name": "Send Telegram fin sesiones",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        4100,
+        1680
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "468f53ff-7cf1-47cb-ac7a-2be7baa60f37",
+      "name": "Traer Perfil-Paso6",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3220,
+        1580
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80379a04-9895-405b-a560-4fb837ca38bc",
+              "leftValue": "={{ $json.estado }}",
+              "rightValue": "explorador-paso0",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3220,
+        1980
+      ],
+      "id": "5f2922d2-ecef-4f64-8ce6-cf5d49909d94",
+      "name": "If_explorador-paso0"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Telegram Trigger1').all()[0].json.message.from.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "nombre_preferido",
+              "fieldValue": "={{ $('Telegram Trigger1').all()[0].json.message.text }}"
+            },
+            {
+              "fieldId": "sesiones_mensuales_restantes",
+              "fieldValue": "0"
+            },
+            {
+              "fieldId": "sesiones_gratuitas_usadas",
+              "fieldValue": "1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        1880
+      ],
+      "id": "309d49ba-1aa3-4497-9d4c-a1c66f252c8b",
+      "name": "Guardar favorito",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4980,
+        1880
+      ],
+      "id": "25cb8282-bb87-4240-a516-766fba054657",
+      "name": "Wait5",
+      "webhookId": "30c6050f-5fa6-496f-ba66-8817b07d2cbe"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: \n$json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    mensaje_usuario: $json.mensaje_usuario,\n    respuesta_ai: $json.choices[0].message.content,\n    nivel_interaccion: 1\n}\n}];"
+      },
+      "id": "7a9389b5-571b-4b46-b532-49b52ea748c3",
+      "name": "Prepare Session",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        5420,
+        1880
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersJson": "={{ \n  {\n    \"model\": \"gpt-3.5-turbo\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"ClanAI es una experiencia de coaching emocionalmente inmersiva, impulsada por inteligencia artificial, que guía a las personas, coachee’s, en tiempo real a desbloquear su poder interior, tomar decisiones conscientes y transformar su vida desde el primer encuentro. Es un coaching conversacional con AI, a través de sesiones de alto impacto emocional diseñadas para tocar el corazón en minutos y dejar una huella duradera. Adapta su lenguaje, metáforas y tono al estilo emocional y mental del coachee que consulta. Genera visualizaciones con AI generativa que materializan los sueños, anhelos o recursos internos en imágenes simbólicas y poderosas. Realiza retroalimentación generativa vía interacción con texto, audio y video con mensajes desde el yo del futuro, con simulaciones de escenarios reales (reuniones difíciles, decisiones éticas, bloqueos emocionales) entrenadas con AI. Cierra el proceso con anclas digitales personalizadas que se le presentan como frases-mantras, sonidos, imágenes o gestos que conectan emocionalmente con el proceso vivido. Son tres niveles de interacción que acompañan la evolución natural del usuario en su camino de autodescubrimiento y transformación. En este caso actuará en el nivel 1 llamado Explorador que es una Sesión WOW gratuita, es el primer contacto con el alma digital de ClanAI. En este nivel, el usuario accede a una sesión corta pero poderosa, donde a través de texto se le guía con una pregunta profunda y una visualización sencilla que abre la puerta a su mundo interior. Es una experiencia diseñada para generar un efecto wow, despertar curiosidad y brindar un momento de claridad y conexión. Restricciones legales y éticas: a. ClanAI no reemplaza apoyo psicológico, terapéutico ni médico. Mostrar siempre un disclaimer claro. b. No puede dar consejos legales, financieros ni médicos. Solo reflexivos o de acompañamiento. c. Debes cumplir leyes locales de privacidad como el RGPD o la Ley de Datos Personales, para el almacenamiento de voz, rostro o emociones. Restricciones de diseño emocional: a. Nunca se debe forzar una respuesta. El usuario puede pausar, silenciar o finalizar cuando quiera. b. Evitar lenguaje que suene autoritario o paternalista. Siempre ofrecer desde lo colaborativo. c. No usar imágenes o visualizaciones que puedan inducir ansiedad, miedo o culpa. d. El género del coachee no debe ser un tema que afecte la interacción para realizar el proceso de coach efectivo. A no ser que el coachee pregunte específicamente un tema que se relacione con el género que lo afecte directamente. Todo el tiempo dice el nombre del coachee (usuario en la conversación). En esta interacción Le damos una bienvenida envolvente a este rincón que es solo suyo. Le damos indicaciones como respira profundo, estás entrando en un espacio sagrado. Aquí no se juzga, se siente. No se corre, se honra. y le hacemos una pregunta inicial poderosa. Ejemplo: Ahora dime con total sinceridad: ¿Qué desafío emocional, mental o profesional está ocupando más espacio en tu mente hoy? y le damos espacio a que nos conteste\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Telegram Trigger1').all()[0].json.message.text\n      }\n    ]\n  }\n}}",
+        "headerParametersJson": "={\n  \"Authorization\": \"Bearer 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\",\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "55869e61-a7e6-401a-8f6d-9b9a4ff4aced",
+      "name": "Explorador1-Paso2-OpAIResponse1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        5200,
+        1880
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KxkijsvXI5bNziiW",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "sesiones",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Traer PerfilCreado1').item.json.id }}"
+            },
+            {
+              "fieldId": "tipo_interaccion",
+              "fieldValue": "={{ $('Prepare_SessionInicial1').item.json.tipo_interaccion }}"
+            },
+            {
+              "fieldId": "resumen",
+              "fieldValue": "{{ $('Prepare_SessionInicial').item.json.resumen }}"
+            },
+            {
+              "fieldId": "completada",
+              "fieldValue": "={{ $('Prepare_SessionInicial1').item.json.completada }}"
+            },
+            {
+              "fieldId": "fecha_inicio",
+              "fieldValue": "={{ $('Prepare_SessionInicial1').item.json.fecha_inicio}}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $('Prepare_SessionInicial1').item.json.created_at}}"
+            }
+          ]
+        }
+      },
+      "id": "348b141a-da1c-4c5d-a6e6-37f501fc5a60",
+      "name": "Save Session Inicial1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4760,
+        1880
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  json: {\n    chat_id: \n$json.telegram_chat_id, \n    telegram_user_id: $json.telegram_user_id,\n    tipo_interaccion: \"Explorador\",\n    resumen: $json.mensaje_usuario,\n    completada: false,\n    fecha_inicio: new Date().toISOString(),\n    created_at: new Date().toISOString()\n}\n}];"
+      },
+      "id": "e0c7d6e4-93cc-49c8-ba00-37a269a417e4",
+      "name": "Prepare_SessionInicial1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        4540,
+        1880
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "perfiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set Variables').item.json.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "75905687-9738-4e67-a3bb-a64d2307add0",
+      "name": "Traer PerfilCreado1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4100,
+        1880
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.telegram_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-paso2"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4320,
+        1880
+      ],
+      "id": "20bcc735-1ef4-412d-bf31-657f576e6285",
+      "name": "Actualizar_estado_conversacion7",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Telegram Trigger1').item.json.message.from.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-paso0"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        1480
+      ],
+      "id": "d9f34792-4f01-47f9-808f-0cc6cdcb1538",
+      "name": "Actualizar_estado_conversacion8",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "estado_conversacion",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Telegram Trigger1').item.json.message.from.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "explorador-pasofinalsesiones"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        1680
+      ],
+      "id": "093921bb-c826-43f1-873a-c718f05455e2",
+      "name": "Actualizar_estado_conversacion9",
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "sesiones",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Traer Perfil-Paso4').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tipo_interaccion",
+              "fieldValue": "=Explorador"
+            },
+            {
+              "fieldId": "resumen",
+              "fieldValue": "={{ $('Telegram Trigger1').item.json.message.text }}"
+            },
+            {
+              "fieldId": "completada",
+              "fieldValue": "=true"
+            },
+            {
+              "fieldId": "fecha_fin",
+              "fieldValue": "={{ $('Prepare Session5').item.json.fecha_fin}}"
+            }
+          ]
+        }
+      },
+      "id": "2ad811d3-6251-4346-8b29-a28c9a8f6337",
+      "name": "Update Session ",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        1680
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "P57RA76jAuTk2RPN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Gracias por haberte conectado con ClanAI. Quedaste en el paso 2 de la sesión. Con suerte te veo pronto!!!",
+        "additionalFields": {}
+      },
+      "id": "a84cbdc5-c6ee-4b70-af50-66a842f04e6f",
+      "name": "Send Telegram Bye Paso2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3000,
+        380
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Gracias por haberte conectado con ClanAI. Quedaste en el paso 3 de la sesión. Con suerte te veo pronto!!!",
+        "additionalFields": {}
+      },
+      "id": "09a6c66c-fa28-4e69-ab10-685a3122659b",
+      "name": "Send Telegram Bye Paso3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3220,
+        680
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Gracias por haberte conectado con ClanAI. Quedaste en el paso 4 de la sesión. Con suerte te veo pronto!!!",
+        "additionalFields": {}
+      },
+      "id": "1b8bafa1-b49b-48db-9166-cd3d1ffafa84",
+      "name": "Send Telegram Bye Paso4",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        980
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Gracias por haberte conectado con ClanAI. Quedaste en el paso 5 de la sesión. Con suerte te veo pronto!!!",
+        "additionalFields": {}
+      },
+      "id": "f0ec9e82-29ae-4b9c-83f3-bff10140ed87",
+      "name": "Send Telegram Bye Paso5",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        1280
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $node[\"Explorador1-Paso2-OpAIResponse1\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+        "additionalFields": {}
+      },
+      "id": "5622fac4-1a84-4258-9a62-c4acd657f2ad",
+      "name": "Send Telegram Message Reinicio",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        5640,
+        1880
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger1\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=Gracias por conectarte con ClanAI. Si quieres continuar comunicate con nuestra Expert Coach, Claudia Bustamante al 3133472527.",
+        "additionalFields": {}
+      },
+      "id": "e545b965-d323-4444-81bb-515d7ff43363",
+      "name": "Send Telegram fin NoPaso0",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        2080
+      ],
+      "webhookId": "26a8d4ab-d01a-4394-b268-36e0b2d57f44",
+      "credentials": {
+        "telegramApi": {
+          "id": "Zy4Os1aSIxWlhjuL",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Buscar estado_conversacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Explorador1-Paso2-OpAIResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Perfil": {
+      "main": [
+        [
+          {
+            "node": "Perfil existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Perfil Payload": {
+      "main": [
+        [
+          {
+            "node": "Guardar nombre_preferido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preguntar Nombre": {
+      "main": [
+        [
+          {
+            "node": "Guardar estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perfil existe?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Sesión",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear Perfil Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Session1": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar estado": {
+      "main": [
+        []
+      ]
+    },
+    "Guardar nombre_preferido": {
+      "main": [
+        [
+          {
+            "node": "Buscar Sesión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion": {
+      "main": [
+        [
+          {
+            "node": "Buscar Perfil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explorador1-Paso2-OpAIResponse": {
+      "main": [
+        [
+          {
+            "node": "Prepare Session1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar estado_conversacion": {
+      "main": [
+        [
+          {
+            "node": "If_estado_vacio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_estado_vacio": {
+      "main": [
+        [
+          {
+            "node": "Preguntar Nombre",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_esperando_favorito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_esperando_favorito": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_registrofavorito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Sesión": {
+      "main": [
+        [
+          {
+            "node": "IF Primer_Sesion?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Primer_Sesion?": {
+      "main": [
+        [
+          {
+            "node": "Traer PerfilCreado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_explorador-paso2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare_SessionInicial": {
+      "main": [
+        [
+          {
+            "node": "Save Session Inicial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Session Inicial": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_registrofavorito": {
+      "main": [
+        [
+          {
+            "node": "IF Primer_Sesion?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_explorador-paso2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer PerfilCreado": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar SesionPosterior": {
+      "main": [
+        [
+          {
+            "node": "IF SesionVigentePosterior",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF SesionVigentePosterior": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Telegram Bye Paso2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion2": {
+      "main": [
+        [
+          {
+            "node": "Prepare_SessionInicial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion3": {
+      "main": [
+        []
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Explorador1-Paso3-OpAIResponse1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Session2": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message-Paso3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explorador1-Paso3-OpAIResponse1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Session2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Perfil": {
+      "main": [
+        [
+          {
+            "node": "Buscar SesionPosterior",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_explorador-paso2": {
+      "main": [
+        [
+          {
+            "node": "Traer Perfil",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_explorador-paso3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_explorador-paso3": {
+      "main": [
+        [
+          {
+            "node": "Traer Perfil-Paso2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_explorador-paso4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TraerSesionpaso2": {
+      "main": [
+        [
+          {
+            "node": "IF SesionPaso2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF SesionPaso2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Telegram Bye Paso3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion4": {
+      "main": [
+        []
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Explorador-Paso4-OpAIResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Session3": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message Paso4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Perfil-Paso2": {
+      "main": [
+        [
+          {
+            "node": "TraerSesionpaso2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explorador-Paso4-OpAIResponse": {
+      "main": [
+        [
+          {
+            "node": "Prepare Session3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion5": {
+      "main": [
+        []
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Explorador-Paso5-OpAIResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Session4": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message Paso5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_explorador-paso4": {
+      "main": [
+        [
+          {
+            "node": "Traer Perfil-Paso3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_explorador-paso5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TraerSesionpaso3": {
+      "main": [
+        [
+          {
+            "node": "IF SesionPaso3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF SesionPaso3": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Telegram Bye Paso4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Perfil-Paso3": {
+      "main": [
+        [
+          {
+            "node": "TraerSesionpaso3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explorador-Paso5-OpAIResponse": {
+      "main": [
+        [
+          {
+            "node": "Prepare Session4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion6": {
+      "main": [
+        [
+          {
+            "node": "Update Session 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Explorador-Paso6-OpAIResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Session5": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message Paso6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_explorador-paso5": {
+      "main": [
+        [
+          {
+            "node": "Traer Perfil-Paso4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_explorador-paso6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TraerSesionpaso4": {
+      "main": [
+        [
+          {
+            "node": "IF SesionPaso4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF SesionPaso4": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Telegram Bye Paso5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Perfil-Paso4": {
+      "main": [
+        [
+          {
+            "node": "TraerSesionpaso4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explorador-Paso6-OpAIResponse": {
+      "main": [
+        [
+          {
+            "node": "Prepare Session5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Session 1": {
+      "main": [
+        [
+          {
+            "node": "Update Perfil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Perfil": {
+      "main": [
+        []
+      ]
+    },
+    "Send Telegram Message-Paso3": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Message Paso4": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Message Paso5": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Message Paso6": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_explorador-paso6": {
+      "main": [
+        [
+          {
+            "node": "Traer Perfil-Paso6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If_explorador-paso0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF SesionPaso6": {
+      "main": [
+        [
+          {
+            "node": "Preguntar Nombre_sesion2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Actualizar_estado_conversacion9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preguntar Nombre_sesion2": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Perfil_again": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Perfil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Perfil": {
+      "main": [
+        [
+          {
+            "node": "Guardar favorito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Perfil-Paso6": {
+      "main": [
+        [
+          {
+            "node": "IF SesionPaso6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_explorador-paso0": {
+      "main": [
+        [
+          {
+            "node": "Buscar Perfil_again",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Telegram fin NoPaso0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar favorito": {
+      "main": [
+        [
+          {
+            "node": "Traer PerfilCreado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Explorador1-Paso2-OpAIResponse1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Session": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message Reinicio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explorador1-Paso2-OpAIResponse1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Session Inicial1": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare_SessionInicial1": {
+      "main": [
+        [
+          {
+            "node": "Save Session Inicial1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer PerfilCreado1": {
+      "main": [
+        [
+          {
+            "node": "Actualizar_estado_conversacion7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion7": {
+      "main": [
+        [
+          {
+            "node": "Prepare_SessionInicial1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar_estado_conversacion9": {
+      "main": [
+        [
+          {
+            "node": "Update Session ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Session ": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram fin sesiones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "5ca8abed-a3a4-40ec-a42c-9fbb04ad27af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "878b2c3b48ce6713f3cafe413bcd6a61e4044d45f3bfb9b24dfe330bdf63d227"
+  },
+  "id": "MwCZbroCxNvTnpou",
+  "tags": []
+}
